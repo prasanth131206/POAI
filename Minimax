@@ -1,0 +1,65 @@
+PLAYER_X, PLAYER_O, EMPTY = 'X', 'O', '.'
+
+def printBoard(b):
+    print("\n".join(" ".join(row) for row in b), end="\n\n")
+
+def isMovesLeft(b):
+    return any(cell == EMPTY for row in b for cell in row)
+
+def evaluate(b):
+    lines = [b[0], b[1], b[2],
+             [b[0][0], b[1][0], b[2][0]],
+             [b[0][1], b[1][1], b[2][1]],
+             [b[0][2], b[1][2], b[2][2]],
+             [b[0][0], b[1][1], b[2][2]],
+             [b[0][2], b[1][1], b[2][0]]]
+    for line in lines:
+        if line == [PLAYER_X]*3: return 10
+        if line == [PLAYER_O]*3: return -10
+    return 0
+
+def minimax(b, d, isMax):
+    s = evaluate(b)
+    if s: return s - d if s > 0 else s + d
+    if not isMovesLeft(b): return 0
+
+    best = -1000 if isMax else 1000
+    for i in range(3):
+        for j in range(3):
+            if b[i][j] == EMPTY:
+                b[i][j] = PLAYER_X if isMax else PLAYER_O
+                val = minimax(b, d+1, not isMax)
+                b[i][j] = EMPTY
+                best = max(best, val) if isMax else min(best, val)
+    return best
+
+def findBestMove(b):
+    bestVal, move = -1000, (-1, -1)
+    for i in range(3):
+        for j in range(3):
+            if b[i][j] == EMPTY:
+                b[i][j] = PLAYER_X
+                val = minimax(b, 0, False)
+                b[i][j] = EMPTY
+                if val > bestVal:
+                    bestVal, move = val, (i, j)
+    return move
+
+board = [
+    [PLAYER_X, PLAYER_O, PLAYER_X],
+    [PLAYER_O, PLAYER_X, EMPTY],
+    [EMPTY, PLAYER_O, PLAYER_X]
+]
+
+print("Current Board:")
+printBoard(board)
+
+move = findBestMove(board)
+print(f"Best Move: {move}")
+
+if move != (-1, -1):
+    board[move[0]][move[1]] = PLAYER_X
+    print("\nBoard after best move:")
+    printBoard(board)
+else:
+    print("No moves left or game over.")
